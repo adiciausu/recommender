@@ -48,13 +48,13 @@ public class Evaluator
                 return RecommenderFactory.createLogLikeItemSimilarityRecommender(model);
             }
         };
-        eval(rb, modelBuilder, dataModel);
+        eval(rb, modelBuilder, dataModel, "LogLike");
         rb = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
                 return RecommenderFactory.createTanimotoItemSimilarityRecommender(model);
             }
         };
-        eval(rb, modelBuilder, dataModel);
+        eval(rb, modelBuilder, dataModel, "Tamimoto");
 
 
         int[] sizes = {2, 10, 100};
@@ -65,13 +65,13 @@ public class Evaluator
                     return RecommenderFactory.createLogLikeUserSimilarityRecommenderWithSize(model, size);
                 }
             };
-            eval(rb, modelBuilder, dataModel);
+            eval(rb, modelBuilder, dataModel, "LogLike");
             rb = new RecommenderBuilder() {
                 public Recommender buildRecommender(DataModel model) throws TasteException {
                     return RecommenderFactory.createTanimotoUserSimilarityRecommenderWithSize(model, size);
                 }
             };
-            eval(rb, modelBuilder, dataModel);
+            eval(rb, modelBuilder, dataModel, "Tamimoto");
         }
 
         double[] thresholds = {0.1, 0.5, 0.7};
@@ -82,13 +82,13 @@ public class Evaluator
                     return RecommenderFactory.createLogLikeUserSimilarityRecommenderWithThreshold(model, threshold);
                 }
             };
-            eval(rb, modelBuilder, dataModel);
+            eval(rb, modelBuilder, dataModel, "LogLike");
             rb = new RecommenderBuilder() {
                 public Recommender buildRecommender(DataModel model) throws TasteException {
                     return RecommenderFactory.createTanimotoUserSimilarityRecommenderWithThreshold(model, threshold);
                 }
             };
-            eval(rb, modelBuilder, dataModel);
+            eval(rb, modelBuilder, dataModel, "Tamimoto");
         }
 
 //        RecommenderIRStatsEvaluator irStatsEvaluator =
@@ -99,9 +99,9 @@ public class Evaluator
 //        System.out.println(stats.getRecall());
     }
 
-    private static void eval(RecommenderBuilder recommenderBuilder, DataModelBuilder modelBuilder, DataModel dataModel) throws TasteException {
+    private static void eval(RecommenderBuilder recommenderBuilder, DataModelBuilder modelBuilder, DataModel dataModel, String algorithmName) throws TasteException {
         RecommenderEvaluator evaluator = new AverageAbsoluteDifferenceRecommenderEvaluator();
         double score = evaluator.evaluate(recommenderBuilder, modelBuilder, dataModel, TRAINING_PERCENTAGE, EVALUATION_PERCENTAGE);
-        System.out.println(String.format("%s: %f", recommenderBuilder.buildRecommender(dataModel).getClass().getSimpleName(), score));
+        System.out.println(String.format("%s[%s]: %f", recommenderBuilder.buildRecommender(dataModel).getClass().getSimpleName(), algorithmName, score));
     }
 }
