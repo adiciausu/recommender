@@ -110,6 +110,7 @@ public class Evaluator
 
     private static void eval(RecommenderBuilder recommenderBuilder, DataModelBuilder modelBuilder, DataModel dataModel, String algorithmName) throws TasteException {
         RecommenderEvaluator evaluator = new AverageAbsoluteDifferenceRecommenderEvaluator();
+        //RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
         double score = evaluator.evaluate(recommenderBuilder, modelBuilder, dataModel, TRAINING_PERCENTAGE, EVALUATION_PERCENTAGE);
         System.out.println(String.format("%s[%s]: %f", recommenderBuilder.buildRecommender(dataModel).getClass().getSimpleName(), algorithmName, score));
     }
