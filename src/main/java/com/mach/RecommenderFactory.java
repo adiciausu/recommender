@@ -4,6 +4,7 @@ import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericBooleanPrefItemBasedRecommender;
+import org.apache.mahout.cf.taste.impl.recommender.GenericBooleanPrefUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.GenericItemSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
@@ -24,28 +25,28 @@ public class RecommenderFactory
         UserSimilarity userSimilarity = new LogLikelihoodSimilarity(dataModel);
         UserNeighborhood userNeighborhood = new NearestNUserNeighborhood(neigbourhoodSize, userSimilarity, dataModel);
 
-        return new GenericUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
+        return new GenericBooleanPrefUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
     }
 
     public static Recommender createTanimotoUserSimilarityRecommenderWithSize(DataModel dataModel, int neigbourhoodSize) throws TasteException {
         UserSimilarity userSimilarity = new TanimotoCoefficientSimilarity(dataModel);
         UserNeighborhood userNeighborhood = new NearestNUserNeighborhood(neigbourhoodSize, userSimilarity, dataModel);
 
-        return new GenericUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
+        return new GenericBooleanPrefUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
     }
 
     public static Recommender createLogLikeUserSimilarityRecommenderWithThreshold(DataModel dataModel, double neighbourhoodThreshold) throws TasteException {
         UserSimilarity userSimilarity = new LogLikelihoodSimilarity(dataModel);
         UserNeighborhood userNeighborhood = new ThresholdUserNeighborhood(neighbourhoodThreshold, userSimilarity, dataModel);
 
-        return new GenericUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
+        return new GenericBooleanPrefUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
     }
 
     public static Recommender createTanimotoUserSimilarityRecommenderWithThreshold(DataModel dataModel, double neighbourhoodThreshold) throws TasteException {
         UserSimilarity userSimilarity = new TanimotoCoefficientSimilarity(dataModel);
         UserNeighborhood userNeighborhood = new ThresholdUserNeighborhood(neighbourhoodThreshold, userSimilarity, dataModel);
 
-        return new GenericUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
+        return new GenericBooleanPrefUserBasedRecommender(dataModel, userNeighborhood, userSimilarity);
     }
 
 

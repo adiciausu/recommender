@@ -91,12 +91,21 @@ public class Evaluator
             eval(rb, modelBuilder, dataModel, "Tamimoto");
         }
 
-//        RecommenderIRStatsEvaluator irStatsEvaluator =
-//                new GenericRecommenderIRStatsEvaluator ();
-//        IRStatistics stats = irStatsEvaluator.evaluate(logItemLikeRecommenderBuilder, modelBuilder, dataModel, null, 5,
-//                GenericRecommenderIRStatsEvaluator.CHOOSE_THRESHOLD, 0.05);
-//        System.out.println(stats.getPrecision());
-//        System.out.println(stats.getRecall());
+        rb = new RecommenderBuilder() {
+            public Recommender buildRecommender(DataModel model) throws TasteException {
+                return RecommenderFactory.createLogLikeUserSimilarityRecommenderWithSize(model, 2);
+            }
+        };
+        irEval(rb, modelBuilder, dataModel);
+    }
+
+    private static void irEval(RecommenderBuilder rb, DataModelBuilder modelBuilder, DataModel dataModel) throws TasteException {
+        RecommenderIRStatsEvaluator irStatsEvaluator =
+                new GenericRecommenderIRStatsEvaluator ();
+        IRStatistics stats = irStatsEvaluator.evaluate(rb, modelBuilder, dataModel, null, 5,
+                GenericRecommenderIRStatsEvaluator.CHOOSE_THRESHOLD, 0.05);
+        System.out.println(stats.getPrecision());
+        System.out.println(stats.getRecall());
     }
 
     private static void eval(RecommenderBuilder recommenderBuilder, DataModelBuilder modelBuilder, DataModel dataModel, String algorithmName) throws TasteException {
