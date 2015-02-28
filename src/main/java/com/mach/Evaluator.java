@@ -26,6 +26,10 @@ import java.io.IOException;
 
 public class Evaluator
 {
+    static final double EVALUATION_PERCENTAGE = 1;
+    static final double TRAINING_PERCENTAGE = 0.9;
+
+
     public static void main(String[] args) throws IOException, TasteException {
         File userPreferencesFile = new File("data/orders-boolean.csv");
         DataModel dataModel = new GenericBooleanPrefDataModel(new FileDataModel(userPreferencesFile));
@@ -36,39 +40,68 @@ public class Evaluator
                 return new GenericBooleanPrefDataModel(
                         GenericBooleanPrefDataModel.toDataMap(trainingData)); }
         };
+        RecommenderBuilder rb;
 
-
-        RecommenderBuilder tanimotoItemRecommenderBuilder = new RecommenderBuilder() {
-            public Recommender buildRecommender(DataModel model) throws TasteException {
-                return RecommenderFactory.createTanimotoItemSimilarityRecommender(model);
-            }
-        };
-
-        RecommenderBuilder logItemLikeRecommenderBuilder = new RecommenderBuilder() {
+        System.out.println("------Item Based Recommender---------------------------------------------------------------");
+        rb = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
                 return RecommenderFactory.createLogLikeItemSimilarityRecommender(model);
             }
         };
+        eval(rb, modelBuilder, dataModel);
+        rb = new RecommenderBuilder() {
+            public Recommender buildRecommender(DataModel model) throws TasteException {
+                return RecommenderFactory.createTanimotoItemSimilarityRecommender(model);
+            }
+        };
+        eval(rb, modelBuilder, dataModel);
 
-        RecommenderEvaluator evaluator =
-                new AverageAbsoluteDifferenceRecommenderEvaluator();
 
-        System.out.println("------Item Based Recommender--------");
-        double tanimotoItemScore = evaluator.evaluate(
-                tanimotoItemRecommenderBuilder, modelBuilder, dataModel, 0.5, 1.0);
-        System.out.println("TanimotoCoefficient: " + tanimotoItemScore);
+        int[] sizes = {2, 10, 100};
+        for (final int size: sizes){
+            System.out.println(String.format("------User Based Recommender (neghbourhoodsize: %d)------------------------------------------------", size));
+            rb = new RecommenderBuilder() {
+                public Recommender buildRecommender(DataModel model) throws TasteException {
+                    return RecommenderFactory.createLogLikeUserSimilarityRecommenderWithSize(model, size);
+                }
+            };
+            eval(rb, modelBuilder, dataModel);
+            rb = new RecommenderBuilder() {
+                public Recommender buildRecommender(DataModel model) throws TasteException {
+                    return RecommenderFactory.createTanimotoUserSimilarityRecommenderWithSize(model, size);
+                }
+            };
+            eval(rb, modelBuilder, dataModel);
+        }
 
-        double logLikeItemScore = evaluator.evaluate(
-                logItemLikeRecommenderBuilder, modelBuilder, dataModel, 0.5, 1.0);
-        System.out.println("LogLike: : " + logLikeItemScore);
+        double[] thresholds = {0.1, 0.5, 0.7};
+        for (final double threshold: thresholds){
+            System.out.println(String.format("------User Based Recommender (neghbourhoodsize: %f)------------------------------------------------", threshold));
+            rb = new RecommenderBuilder() {
+                public Recommender buildRecommender(DataModel model) throws TasteException {
+                    return RecommenderFactory.createLogLikeUserSimilarityRecommenderWithThreshold(model, threshold);
+                }
+            };
+            eval(rb, modelBuilder, dataModel);
+            rb = new RecommenderBuilder() {
+                public Recommender buildRecommender(DataModel model) throws TasteException {
+                    return RecommenderFactory.createTanimotoUserSimilarityRecommenderWithThreshold(model, threshold);
+                }
+            };
+            eval(rb, modelBuilder, dataModel);
+        }
 
-        System.out.println("------User Based Recommender--------");
-        double tanimotoUserScore = evaluator.evaluate(
-                tanimotoItemRecommenderBuilder, modelBuilder, dataModel, 0.5, 1.0);
-        System.out.println("TanimotoCoefficient: " + tanimotoUserScore);
+//        RecommenderIRStatsEvaluator irStatsEvaluator =
+//                new GenericRecommenderIRStatsEvaluator ();
+//        IRStatistics stats = irStatsEvaluator.evaluate(logItemLikeRecommenderBuilder, modelBuilder, dataModel, null, 5,
+//                GenericRecommenderIRStatsEvaluator.CHOOSE_THRESHOLD, 0.05);
+//        System.out.println(stats.getPrecision());
+//        System.out.println(stats.getRecall());
+    }
 
-        double logLikeUserScore = evaluator.evaluate(
-                logItemLikeRecommenderBuilder, modelBuilder, dataModel, 0.5, 1.0);
-        System.out.println("LogLike: : " + logLikeUserScore);
+    private static void eval(RecommenderBuilder recommenderBuilder, DataModelBuilder modelBuilder, DataModel dataModel) throws TasteException {
+        RecommenderEvaluator evaluator = new AverageAbsoluteDifferenceRecommenderEvaluator();
+        double score = evaluator.evaluate(recommenderBuilder, modelBuilder, dataModel, TRAINING_PERCENTAGE, EVALUATION_PERCENTAGE);
+        System.out.println(String.format("%s: %f", recommenderBuilder.buildRecommender(dataModel).getClass().getSimpleName(), score));
     }
 }
